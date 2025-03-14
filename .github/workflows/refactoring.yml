@@ -1,0 +1,38 @@
+name: Automated Design Smell Detection & Refactoring with Metrics
+
+on:
+  push:
+    branches:
+      - '**'  # Matches any branch
+  schedule:
+    # Runs every 3 hours
+    - cron: '0 */3 * * *'
+  workflow_dispatch:  # Allows manual trigger
+
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install Dependencies
+        run: |
+          pip install PyGithub google-generativeai lizard
+
+      - name: Run Refactoring Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.TGITHUB_TOKEN }}
+          # Explicitly set the repository name for this project:
+          GITHUB_REPOSITORY: "SE-course-serc/project-1-team-9"
+          TARGET_FOLDER: "reader-core/src/main/java/com/sismics/reader/core/dao/lucene"  # Adjust if needed
+          BASE_BRANCH: "master"  # Adjust if needed
+        run: |
+          python refactoring_pipeline.py
